@@ -140,7 +140,7 @@ onBeforeUnmount(() => {
         <footer class="flex justify-end flex-row bg-slate-100 outline outline-1 outline-black w-full shrink-0 h-4">
             <div class="flex h-full w-4 p-1 bg-transparent cursor-nwse-resize" @touchstart="startResize"
                 @mousedown="startResize">
-                <div class=" h-full w-full rounded bg-slate-300"></div>
+                <div class="h-full w-full rounded-sm bg-slate-300"></div>
             </div>
         </footer>
     </div>
