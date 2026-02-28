@@ -32,7 +32,7 @@ const emit = defineEmits<{
 const { width: browserWidth, height: browserHeight } = useWindowSize();
 
 const margin = 12;
-const menuBarHeight = 28;
+const menuBarHeight = 27;
 const DRAG_THRESHOLD_PX = 5;
 
 // Local reactive copy – mutated during drag/resize, emitted on completion
@@ -219,7 +219,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    :class="`absolute flex flex-col justify-between bg-white outline rounded-md overflow-hidden shadow-xl`"
+    :class="`absolute flex flex-col justify-between bg-white outline rounded-xl ${local.isMaximized ? 'rounded-t-none' : ''} overflow-hidden shadow-xl`"
     :style="{
       left: local.isMaximized ? margin + 'px' : local.offsetX + 'px',
       top: local.isMaximized
