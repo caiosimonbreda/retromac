@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { WindowData } from "@/types";
-import MenuBar from "@/components/MenuBar.vue";
-import Window from "@/components/Window.vue";
+import MenuBar from "@/components/ui/MenuBar.vue";
+import Window from "@/components/ui/Window.vue";
 import binIcon from "@/assets/icons/bin4.png";
 
 function isMobileDevice() {
@@ -106,7 +106,7 @@ const onWindowUpdate = (
             computers field by
             portraying their products as cool, innovative, fun and well designed (1998 – Chic. Not Geek campaign,
             1999 – the Thrill of Surfing campaign and so forth). Furthermore, it was the 1990s who triggered the
-            famous Think different slogan. From this point one, the road they’ve taken seems irreversible and will
+            famous Think different slogan. From this point one, the road they've taken seems irreversible and will
             steadily transform Apple into the huge company that it is today. </p>
         </div>
       </Window> -->

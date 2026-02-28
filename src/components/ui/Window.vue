@@ -245,7 +245,7 @@ onBeforeUnmount(() => {
           class="h-2.5 w-2.5 bg-red-400 hover:bg-red-300 active:bg-red-500 rounded-full outline"
           @mousedown.stop
           @touchstart.stop
-          @click="emit('close', windowIndex)"
+          @click.stop="emit('close', windowIndex)"
         ></div>
         <div
           class="h-2.5 w-2.5 bg-yellow-400 hover:bg-yellow-300 active:bg-yellow-500 rounded-full outline"
