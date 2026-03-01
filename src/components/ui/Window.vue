@@ -9,13 +9,15 @@ import {
 } from "vue";
 import { useWindowSize } from "@vueuse/core";
 import type { WindowData } from "@/types";
+import WindowTitleBar from "@/components/ui/WindowTitleBar.vue";
 
 const props = withDefaults(
   defineProps<{
     windowData: WindowData;
     windowIndex: number;
+    isActive?: boolean;
   }>(),
-  {},
+  { isActive: true },
 );
 
 const emit = defineEmits<{
@@ -207,6 +209,12 @@ onMounted(() => {
   document.addEventListener("touchmove", onDocumentMouseMove);
   document.addEventListener("mouseup", onDocumentMouseUp);
   document.addEventListener("touchend", onDocumentMouseUp);
+  
+  //Start centered if enabled:
+  if (props.windowData.startCentered) {
+    local.offsetX = (browserWidth.value - local.width) / 2;
+    local.offsetY = (browserHeight.value - local.height) / 2;
+  }
 });
 
 onBeforeUnmount(() => {
@@ -219,7 +227,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    :class="`absolute flex flex-col justify-between bg-white outline rounded-xl ${local.isMaximized ? 'rounded-t-none' : ''} overflow-hidden shadow-xl`"
+    :class="`absolute flex flex-col justify-between bg-slate-100 outline rounded-xl ${local.isMaximized ? 'rounded-t-none' : ''} overflow-hidden shadow-xl`"
     :style="{
       left: local.isMaximized ? margin + 'px' : local.offsetX + 'px',
       top: local.isMaximized
@@ -234,41 +242,23 @@ onBeforeUnmount(() => {
       zIndex: windowData.zIndex,
     }"
   >
-    <div
-      class="flex flex-row items-center px-2.5 outline bg-slate-100 h-6 shrink-0"
-      :style="{ zIndex: windowData.zIndex + 1 }"
-      @touchstart="startDrag"
-      @mousedown="startDrag"
-    >
-      <div class="flex flex-row items-center h-full gap-2">
-        <div
-          class="h-2.5 w-2.5 bg-red-400 hover:bg-red-300 active:bg-red-500 rounded-full outline"
-          @mousedown.stop
-          @touchstart.stop
-          @click.stop="emit('close', windowIndex)"
-        ></div>
-        <div
-          class="h-2.5 w-2.5 bg-yellow-400 hover:bg-yellow-300 active:bg-yellow-500 rounded-full outline"
-          @mousedown.stop
-          @touchstart.stop
-        ></div>
-        <div
-          class="h-2.5 w-2.5 bg-emerald-400 hover:bg-emerald-300 active:bg-emerald-500 rounded-full outline"
-          @mousedown.stop
-          @touchstart.stop
-          @click="toggleMaximisation"
-        ></div>
-      </div>
-    </div>
-    <main class="overflow-scroll scroll-smooth h-full">
+    <WindowTitleBar
+      :window-data="windowData"
+      :window-index="windowIndex"
+      :is-active="props.isActive"
+      @close="emit('close', windowIndex)"
+      @maximise-toggle="toggleMaximisation"
+      @drag-start="startDrag"
+    />
+    <main :class="`overflow-scroll scroll-smooth h-full ${windowData.unifiedBackground ? 'bg-transparent' : 'bg-white'}`">
       <slot></slot>
     </main>
     <footer
-      class="flex justify-end flex-row bg-slate-100 outline w-full shrink-0 h-4"
+      :class="`flex justify-end items-center flex-row ${windowData.unifiedBackground ? 'outline-none' : 'outline'} w-full shrink-0 h-4 outline`"
     >
       <div
-        v-if="!local.isMaximized"
-        class="flex h-full w-4 p-1 bg-transparent cursor-nwse-resize"
+        v-if="!local.isMaximized && !windowData.disableResize"
+        class="flex h-3.5 w-3.5 p-1 rounded-full bg-transparent cursor-nwse-resize"
         @touchstart="startResize"
         @mousedown="startResize"
       >

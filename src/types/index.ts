@@ -1,6 +1,8 @@
+import type { Component } from "vue";
+
 export interface WindowData {
   id?: string;
-  content?: string;
+  content?: Component;
   windowIndex?: number;
   zIndex: number;
   offsetX: number;
@@ -9,5 +11,11 @@ export interface WindowData {
   initialY: number;
   height: number;
   width: number;
-  isMaximized: boolean;
+  isMaximized?: boolean;
+  disableClose?: boolean;
+  disableMaximise?: boolean;
+  disableMinimise?: boolean;
+  disableResize?: boolean;
+  unifiedBackground?: boolean;
+  startCentered?: boolean;
 }

@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { shallowRef, ref, triggerRef } from "vue";
 import type { WindowData } from "@/types";
 import MenuBar from "@/components/ui/MenuBar.vue";
 import Window from "@/components/ui/Window.vue";
 import binIcon from "@/assets/icons/bin4.png";
+import ExampleDocument from "@/components/programs/ExampleDocument.vue";
+import TestProgram from "@/components/programs/TestProgram.vue";
 
 function isMobileDevice() {
   const userAgent = navigator.userAgent;
@@ -14,61 +16,61 @@ function isMobileDevice() {
 
 const isMobile = isMobileDevice();
 
-/* 
-Create an active windows array. Clicking an icon or selecting a menu 
-option will add a window to this array, and a v-for will be used to
-render multiple window instances.
-*/
-
-const activeWindows = ref<WindowData[]>([
+const windows = shallowRef<WindowData[]>([
   {
-    id: "macWindow",
-    content: "bg-emerald-100",
+    id: "exampleDocument",
+    content: ExampleDocument,
+    zIndex: 0,
+    offsetX: 40,
+    offsetY: 60,
+    initialX: 0,
+    initialY: 0,
+    height: 250,
+    width: 250,
+    isMaximized: false,
+  },
+  {
+    id: "testProgram",
+    content: TestProgram,
     zIndex: 1,
     offsetX: 40,
     offsetY: 60,
     initialX: 0,
     initialY: 0,
-    height: 250,
+    height: 280,
     width: 250,
     isMaximized: false,
-  },
-  {
-    id: "otherWindow",
-    content: "bg-purple-100",
-    zIndex: 2,
-    offsetX: 40,
-    offsetY: 60,
-    initialX: 0,
-    initialY: 0,
-    height: 250,
-    width: 250,
-    isMaximized: false,
-  },
-  {
-    id: "lmaoEven",
-    content: "bg-red-100",
-    zIndex: 3,
-    offsetX: 40,
-    offsetY: 60,
-    initialX: 0,
-    initialY: 0,
-    height: 250,
-    width: 250,
-    isMaximized: false,
+    unifiedBackground: true,
+    disableMinimise: true,
+    disableMaximise: true,
+    disableResize: true,
+    startCentered: true,
   },
 ]);
 
+const activeWindowId = ref<string | null>(windows.value[0]?.id ?? null);
+
 const onWindowFocus = (windowIndex: number) => {
-  const windowToPop = activeWindows.value.splice(windowIndex, 1);
-  windowToPop[0].zIndex = activeWindows.value.length;
-  activeWindows.value.push(windowToPop[0]);
+  const windowToPop = windows.value.splice(windowIndex, 1);
+  windowToPop[0].zIndex = windows.value.length;
+  windows.value.push(windowToPop[0]);
+  activeWindowId.value = windowToPop[0].id ?? null;
+  triggerRef(windows);
 };
 
-// When deleting a window, re-assign all Z-indexes to window index + 1 (still necessary?)
-
 const closeWindow = (windowIndex: number) => {
-  activeWindows.value.splice(windowIndex, 1);
+  const closedWindow = windows.value[windowIndex];
+  const wasActive = closedWindow?.id === activeWindowId.value;
+  windows.value.splice(windowIndex, 1);
+  if (wasActive && windows.value.length > 0) {
+    const topWindow = windows.value.reduce((a, b) =>
+      (a.zIndex > b.zIndex ? a : b),
+    );
+    activeWindowId.value = topWindow?.id ?? null;
+  } else if (windows.value.length === 0) {
+    activeWindowId.value = null;
+  }
+  triggerRef(windows);
 };
 
 const onWindowUpdate = (
@@ -78,9 +80,10 @@ const onWindowUpdate = (
     "offsetX" | "offsetY" | "initialX" | "initialY" | "width" | "height"
   >,
 ) => {
-  const window = activeWindows.value[windowIndex];
+  const window = windows.value[windowIndex];
   if (window) {
     Object.assign(window, payload);
+    triggerRef(windows);
   }
 
   // TODO: Store the updated window data in local storage
@@ -99,29 +102,18 @@ const onWindowUpdate = (
           <label class="text-sm font-mono">Trash</label>
         </div>
       </div>
-      <!-- <Window :window-index="0" :z-index="40">
-        <div class="p-3">
-          <h1 class="font-black text-xl pb-3 font-mono">Apple Computer Inc.</h1>
-          <p class="font-mono">The 1990s was the decade when Apple gained a comparative advantage in the personal
-            computers field by
-            portraying their products as cool, innovative, fun and well designed (1998 – Chic. Not Geek campaign,
-            1999 – the Thrill of Surfing campaign and so forth). Furthermore, it was the 1990s who triggered the
-            famous Think different slogan. From this point one, the road they've taken seems irreversible and will
-            steadily transform Apple into the huge company that it is today. </p>
-        </div>
-      </Window> -->
-
       <Window
-        v-for="(window, windowIndex) in activeWindows"
+        v-for="(window, windowIndex) in windows"
+        :key="window.id"
         :window-data="window"
         :window-index="windowIndex"
-        :key="window.id"
+        :is-active="window.id === activeWindowId"
         @mousedown="onWindowFocus(windowIndex)"
         @touchstart="onWindowFocus(windowIndex)"
         @close="closeWindow(windowIndex)"
         @update="(payload) => onWindowUpdate(windowIndex, payload)"
       >
-        <div :class="`h-full w-full ${window.content}`"></div>
+        <component :is="window.content" />
       </Window>
     </main>
   </div>
