@@ -227,7 +227,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    :class="`absolute flex flex-col justify-between bg-slate-100 outline rounded-xl ${local.isMaximized ? 'rounded-t-none' : ''} overflow-hidden shadow-xl`"
+    :class="`absolute flex flex-col justify-between bg-slate-100 outline rounded-xl ${local.isMaximized ? 'rounded-t-none' : ''} overflow-hidden ${isActive ? 'shadow-[0px_0px_40px_rgba(0,0,0,0.3)]' : 'shadow-lg'}`"
     :style="{
       left: local.isMaximized ? margin + 'px' : local.offsetX + 'px',
       top: local.isMaximized
