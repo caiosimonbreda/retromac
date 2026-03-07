@@ -19,3 +19,20 @@ export interface WindowData {
   unifiedBackground?: boolean;
   startCentered?: boolean;
 }
+
+export interface WindowShallowData {
+  id?: string;
+  content: string;
+  offsetX?: number;
+  offsetY?: number;
+  initialX?: number;
+  initialY?: number;
+  height?: number;
+  width?: number;
+  isMaximized?: boolean;
+  unifiedBackground?: boolean;
+  disableMinimise?: boolean;
+  disableMaximise?: boolean;
+  disableResize?: boolean;
+  startCentered?: boolean;
+}
