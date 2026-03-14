@@ -6,6 +6,7 @@ import {
   onMounted,
   onBeforeUnmount,
   computed,
+  provide,
 } from "vue";
 import { useWindowSize } from "@vueuse/core";
 import type { WindowData } from "@/types";
@@ -19,6 +20,8 @@ const props = withDefaults(
   }>(),
   { isActive: true },
 );
+
+provide("appId", computed(() => props.windowData.id ?? null));
 
 const emit = defineEmits<{
   (e: "close", windowIndex: number): void;

@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { shallowRef, ref, triggerRef } from "vue";
+import { shallowRef, ref, triggerRef, watch, onMounted, provide } from "vue";
 import type { WindowData, WindowShallowData } from "@/types";
 import MenuBar from "@/components/ui/MenuBar.vue";
 import Window from "@/components/ui/Window.vue";
-import binIcon from "@/assets/icons/bin4.png";
-import folderIcon from "@/assets/icons/folder.png";
+import { useMenuBarStore } from "@/stores/menuBarStore";
+import { getDefaultMenus } from "@/stores/defaultMenus";
+import FinderItem from "./finder/FinderItem.vue";
+
+const { setActiveApp, registerMenus } = useMenuBarStore();
 
 function isMobileDevice() {
   const userAgent = navigator.userAgent;
@@ -18,6 +21,15 @@ const isMobile = isMobileDevice();
 const windows = shallowRef<WindowData[]>([]);
 
 const activeWindowId = ref<string | null>(windows.value[0]?.id ?? null);
+
+onMounted(() => {
+  registerMenus("desktop", getDefaultMenus());
+  setActiveApp(activeWindowId.value);
+});
+
+watch(activeWindowId, (id) => {
+  setActiveApp(id);
+}, { immediate: true });
 
 const onWindowFocus = (windowIndex: number) => {
   const windowToPop = windows.value.splice(windowIndex, 1);
@@ -95,19 +107,19 @@ const onWindowUpdate = (
 
   // TODO: Store the updated window data in local storage
 };
+
+// Provide the openWindow function to the Finder component
+provide("openWindow", handleOpenWindow);
 </script>
 
 <template>
-  <div :class="`${isMobile ? 'h-[90svh]' : 'h-screen'} w-screen p-3`">
+  <div :class="`${isMobile ? 'h-[90dvh]' : 'h-screen'} w-screen p-3`">
     <main
-      class="flex flex-col bg-linear-to-b from-slate-400 to-slate-500 rounded-2xl h-full w-full overflow-hidden overscroll-none"
+      class="flex flex-col bg-linear-to-b from-zinc-300 to-zinc-400 rounded-2xl h-full w-full overflow-hidden overscroll-none"
     >
       <MenuBar @open-window="handleOpenWindow" />
       <div class="flex flex-col h-full w-full p-6 items-end justify-start gap-5">
-        <div class="flex flex-col gap-1.5 justify-center items-center" @dblclick="handleOpenWindow({ content: 'ExampleDocument' })">
-          <img class="w-15" :src="folderIcon" />
-          <label class="text-sm font-mono">Documents</label>
-        </div>
+        <FinderItem name="Macintosh HD" type="disk" @dblclick="handleOpenWindow({ content: 'DocumentReader' })" />
       </div>
       <Window
         v-for="(window, windowIndex) in windows"

@@ -47,27 +47,33 @@ const maximiseButtonClasses = computed(
     @touchstart="emit('drag-start', $event)"
     @mousedown="emit('drag-start', $event)"
   >
-    <div class="title-bar flex flex-row items-center h-full gap-2">
-      <button
-        :disabled="props.windowData.disableClose"
-        :class="closeButtonClasses"
-        @mousedown.stop
-        @touchstart.stop
-        @click.stop="emit('close', props.windowIndex)"
-      ></button>
-      <button
-        :disabled="props.windowData.disableMinimise"
-        :class="minimiseButtonClasses"
-        @mousedown.stop
-        @touchstart.stop
-      ></button>
-      <button
-        :disabled="props.windowData.disableMaximise"
-        :class="maximiseButtonClasses"
-        @mousedown.stop
-        @touchstart.stop
-        @click="emit('maximise-toggle')"
-      ></button>
+    <div class="title-bar flex flex-row items-center h-full gap-2 justify-between w-full ">
+      <div class="title-bar-buttons flex flex-row items-center h-full gap-2 shrink-0 w-12">
+        <button
+          :disabled="props.windowData.disableClose"
+          :class="closeButtonClasses"
+          @mousedown.stop
+          @touchstart.stop
+          @click.stop="emit('close', props.windowIndex)"
+        ></button>
+        <button
+          :disabled="props.windowData.disableMinimise"
+          :class="minimiseButtonClasses"
+          @mousedown.stop
+          @touchstart.stop
+        ></button>
+        <button
+          :disabled="props.windowData.disableMaximise"
+          :class="maximiseButtonClasses"
+          @mousedown.stop
+          @touchstart.stop
+          @click="emit('maximise-toggle')"
+        ></button>
+      </div>
+      <div v-if="props.windowData.title" class="title-bar-title flex flex-row items-center h-full gap-2 font-mono">
+        <span :class="`text-sm font-medium text-nowrap clamp-1 ${props.isActive ? 'text-black/80' : 'text-black/30'}`">{{ props.windowData.title }}</span>
+      </div>
+      <div class="flex w-12 shrink-0"></div>
     </div>
   </div>
 </template>

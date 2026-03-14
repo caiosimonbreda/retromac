@@ -1,7 +1,23 @@
 import type { Component } from "vue";
 
+export interface MenuOption {
+  id: string;
+  name: string;
+  disabled: boolean;
+  openWindow?: WindowShallowData;
+}
+
+export interface MenuEntry {
+  id: string;
+  name?: string;
+  labelType: "apple" | "text";
+  isOpen: boolean;
+  options: MenuOption[];
+}
+
 export interface WindowData {
   id?: string;
+  title?: string;
   content?: Component;
   windowIndex?: number;
   zIndex: number;
@@ -22,6 +38,7 @@ export interface WindowData {
 
 export interface WindowShallowData {
   id?: string;
+  title?: string;
   content: string;
   offsetX?: number;
   offsetY?: number;
