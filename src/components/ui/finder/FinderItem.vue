@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import folderIcon from "@/assets/icons/folder.png";
 import hddIcon from "@/assets/icons/hdd.png";
+import textFileIcon from "@/assets/icons/textfile.png";
 
 const props = defineProps<{
   name: string;
@@ -16,10 +17,20 @@ const emit = defineEmits<{
 }>();
 
 const icon = computed(() => {
-  if (props.type === "disk") {
-    return hddIcon;
+  if (props.customIcon) {
+    return props.customIcon;
   }
-  return folderIcon;
+
+  switch (props.type) {
+    case "folder":
+      return folderIcon;
+    case "disk":
+      return hddIcon;
+    case "file":
+      return textFileIcon;
+    default:
+      return textFileIcon;
+  }
 });
 </script>
 
@@ -35,8 +46,7 @@ const icon = computed(() => {
     @dblclick="emit('activate')"
   >
     <div class="finder-item-icon w-14">
-      <img v-if="customIcon" :src="customIcon" draggable="false" />
-      <img v-else :src="icon" draggable="false" />
+      <img :src="icon" draggable="false" />
     </div>
     <div class="finder-item-name w-full h-full text-center clamp-2 px-0.5">
       {{ name }}

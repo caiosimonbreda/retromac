@@ -5,6 +5,7 @@ import MenuBar from "@/components/ui/MenuBar.vue";
 import Window from "@/components/ui/Window.vue";
 import { useMenuBarStore } from "@/stores/menuBarStore";
 import { getDefaultMenus } from "@/stores/defaultMenus";
+import aimIcon from "@/assets/icons/aim.png";
 import FinderItem from "./finder/FinderItem.vue";
 
 const { setActiveApp, registerMenus } = useMenuBarStore();
@@ -120,6 +121,7 @@ provide("openWindow", handleOpenWindow);
       <MenuBar @open-window="handleOpenWindow" />
       <div class="flex flex-col h-full w-full p-6 items-end justify-start gap-5">
         <FinderItem name="Macintosh HD" type="disk" @dblclick="handleOpenWindow({ content: 'DocumentReader' })" />
+        <FinderItem name="Chat" type="other" :custom-icon="aimIcon" @dblclick="handleOpenWindow({ content: 'DocumentReader' })" />
       </div>
       <Window
         v-for="(window, windowIndex) in windows"
