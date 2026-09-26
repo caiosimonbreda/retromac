@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject, onMounted, onUnmounted, computed, nextTick, type ComputedRef } from "vue"
+import { ref, inject, onMounted, onBeforeUnmount, computed, nextTick, type ComputedRef } from "vue"
 import FinderItem from "@/components/ui/finder/FinderItem.vue"
 import { useMenuBarStore } from "@/stores/menuBarStore"
 import type { MenuEntry, WindowShallowData } from "@/types"
@@ -83,7 +83,7 @@ function getFinderMenus(): MenuEntry[] {
 const openWindow = inject<(data: WindowShallowData) => void>("openWindow")
 
 // Message receiving:
-const messages = ref([]); 
+const messages = ref([]);
 const peoplePresent = ref([]); // This will hold the list of people currently present in the chat
 const chatContainer = ref<HTMLDivElement | null>(null);
 
@@ -158,18 +158,20 @@ onMounted(async () => {
   });
 
   // Declare presence
-  await pb.collection("chatPresence").create({
-    nickname: nickname.value,
-  });
+  if (!peoplePresent.value.some((person) => person.nickname === nickname.value)) {
+    await pb.collection("chatPresence").create({
+      nickname: nickname.value,
+    });
 
-  // Notify that the user has joined the chat
-  await pb.collection("chatMessages").create({
-    nickname: 'systemctl',
-    content: `${nickname.value} has joined the chat.`,
-  });
+    // Notify that the user has joined the chat
+    await pb.collection("chatMessages").create({
+      nickname: 'systemctl',
+      content: `${nickname.value} has joined the chat.`,
+    });
+  }
 })
 
-onUnmounted(async () => {
+onBeforeUnmount(async () => {
   await pb.collection("chatMessages").create({
     nickname: 'systemctl',
     content: `${nickname.value} has fled.`,
@@ -202,13 +204,15 @@ const sendMessage = async () => {
     <div class="w-48 h-full rounded-md text-sm">
       <div class="flex flex-col w-full h-full bg-white border overflow-y-auto rounded-md gap-1 px-2 py-1">
         <p>People:</p>
-        <p v-for="person in peoplePresent" :key="person.id" :class="`${person.nickname === nickname ? 'text-red-500' : 'text-blue-500'}`">
+        <p v-for="person in peoplePresent" :key="person.id"
+          :class="`${person.nickname === nickname ? 'text-red-500' : 'text-blue-500'}`">
           {{ person.nickname }}
         </p>
       </div>
     </div>
     <div class="flex flex-col w-full h-full gap-2">
-      <div ref="chatContainer" id="chat-container" class="flex flex-col gap-1 px-2 py-1 h-full bg-white border rounded-md overflow-y-auto">
+      <div ref="chatContainer" id="chat-container"
+        class="flex flex-col gap-1 px-2 py-1 h-full bg-white border rounded-md overflow-y-auto">
         <div v-for="message in messages" :key="message.id">
           <p v-if="message.nickname !== 'systemctl'" class="text-black leading-5.5">
             <span :class="`${message.nickname === nickname ? 'text-red-500' : 'text-blue-500'}`">
