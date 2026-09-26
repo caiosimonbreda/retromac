@@ -116,12 +116,13 @@ provide("openWindow", handleOpenWindow);
 <template>
   <div :class="`${isMobile ? 'h-[90dvh]' : 'h-screen'} w-screen p-3`">
     <main
-      class="flex flex-col bg-linear-to-b from-zinc-300 to-zinc-400 rounded-2xl h-full w-full overflow-hidden overscroll-none"
+      class="flex flex-col bg-linear-to-b from-teal-100 to-sky-200 rounded-2xl h-full w-full overflow-hidden overscroll-none"
     >
       <MenuBar @open-window="handleOpenWindow" />
       <div class="flex flex-col h-full w-full p-6 items-end justify-start gap-5">
-        <FinderItem name="Macintosh HD" type="disk" @dblclick="handleOpenWindow({ content: 'DocumentReader' })" />
-        <FinderItem name="Chat" type="other" :custom-icon="aimIcon" @dblclick="handleOpenWindow({ content: 'DocumentReader' })" />
+        <FinderItem name="Macintosh HD" type="disk" @dblclick="handleOpenWindow({ content: 'DocumentReader'})" />
+        <FinderItem name="Mac Chat" type="other" :custom-icon="aimIcon" @dblclick="handleOpenWindow({ content: 'Chat', unifiedBackground: true, title: 'Chat', height: 380,
+            width: 480 })" />
       </div>
       <Window
         v-for="(window, windowIndex) in windows"
