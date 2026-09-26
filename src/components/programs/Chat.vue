@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject, onMounted, onUnmounted, computed, type ComputedRef } from "vue"
+import { ref, inject, onMounted, onUnmounted, computed, nextTick, type ComputedRef } from "vue"
 import FinderItem from "@/components/ui/finder/FinderItem.vue"
 import { useMenuBarStore } from "@/stores/menuBarStore"
 import type { MenuEntry, WindowShallowData } from "@/types"
@@ -80,6 +80,24 @@ function getFinderMenus(): MenuEntry[] {
   ];
 }
 
+const openWindow = inject<(data: WindowShallowData) => void>("openWindow")
+
+// Message receiving:
+const messages = ref([]); 
+const peoplePresent = ref([]); // This will hold the list of people currently present in the chat
+const chatContainer = ref<HTMLDivElement | null>(null);
+
+const scrollToBottom = async () => {
+  await nextTick();
+
+  if (chatContainer.value) {
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+  }
+};
+
+let messageUnsubscribe;
+let presenceUnsubscribe;
+
 const nickname = ref("caio");
 // const nickname = ref(localStorage.getItem("chat-nickname") ?? "");
 
@@ -88,15 +106,16 @@ onMounted(async () => {
     registerMenus(appId.value, getFinderMenus())
   }
 
-  // Chat message subscription
+  // Chat history retrieval
   const result = await pb.collection("chatMessages").getList(1, 50, {
     sort: "created",
   });
 
-  // console.log("Fetched chat messages:", result.items);
   messages.value = result.items;
+  await scrollToBottom();
 
-  unsubscribe = await pb.collection("chatMessages").subscribe("*", (event) => {
+  // Chat message subscription
+  messageUnsubscribe = await pb.collection("chatMessages").subscribe("*", (event) => {
     const record = event.record;
 
     if (event.action === "create") {
@@ -105,6 +124,7 @@ onMounted(async () => {
         messages.value.sort((a, b) =>
           a.created.localeCompare(b.created),
         );
+        void scrollToBottom();
       }
     } else if (event.action === "update") {
       const index = messages.value.findIndex(
@@ -117,22 +137,52 @@ onMounted(async () => {
       );
     }
   });
+
+  const presenceResult = await pb.collection("chatPresence").getFullList({
+    sort: "created",
+  });
+
+  peoplePresent.value = presenceResult;
+
+  presenceUnsubscribe = await pb.collection("chatPresence").subscribe("*", (event) => {
+    // Handle presence events
+    if (event.action === "create") {
+      if (!peoplePresent.value.some((person) => person.id === event.record.id)) {
+        peoplePresent.value.push(event.record);
+      }
+    } else if (event.action === "delete") {
+      peoplePresent.value = peoplePresent.value.filter(
+        (person) => person.id !== event.record.id,
+      );
+    }
+  });
+
+  // Declare presence
+  await pb.collection("chatPresence").create({
+    nickname: nickname.value,
+  });
+
+  // Notify that the user has joined the chat
+  await pb.collection("chatMessages").create({
+    nickname: 'systemctl',
+    content: `${nickname.value} has joined the chat.`,
+  });
 })
 
-const openWindow = inject<(data: WindowShallowData) => void>("openWindow")
+onUnmounted(async () => {
+  await pb.collection("chatMessages").create({
+    nickname: 'systemctl',
+    content: `${nickname.value} has fled.`,
+  });
+
+  await pb.collection("chatPresence").delete(peoplePresent.value.find(person => person.nickname === nickname.value)?.id);
+
+  messageUnsubscribe?.();
+  presenceUnsubscribe?.();
+});
 
 // Message sending:
 const messageInput = ref("")
-
-
-// Message receiving:
-const messages = ref([]);
-
-let unsubscribe;
-
-onUnmounted(() => {
-  unsubscribe?.();
-});
 
 const sendMessage = async () => {
   if (!messageInput.value.trim()) return;
@@ -150,16 +200,26 @@ const sendMessage = async () => {
 <template>
   <div class="w-full h-full flex font-mono px-2 gap-2">
     <div class="w-48 h-full rounded-md text-sm">
-      <div class="flex w-full h-full bg-white border rounded-md"></div>
+      <div class="flex flex-col w-full h-full bg-white border overflow-y-auto rounded-md gap-1 px-2 py-1">
+        <p>People:</p>
+        <p v-for="person in peoplePresent" :key="person.id" :class="`${person.nickname === nickname ? 'text-red-500' : 'text-blue-500'}`">
+          {{ person.nickname }}
+        </p>
+      </div>
     </div>
     <div class="flex flex-col w-full h-full gap-2">
-      <div id="chat-container" class="flex flex-col gap-1 px-2 py-1 h-full bg-white border rounded-md">
-        <p v-for="message in messages" :key="message.id" class="text-black leading-5.5">
-          <span :class="`${message.nickname === nickname ? 'text-blue-500' : 'text-gray-500'}`">
-            {{ message.nickname }}
-            {{ '[' + new Date(message.created).toLocaleString().slice(12, 17) + ']' }}:</span>
-          <span class="ml-2">{{ message.content }}</span>
-        </p>
+      <div ref="chatContainer" id="chat-container" class="flex flex-col gap-1 px-2 py-1 h-full bg-white border rounded-md overflow-y-auto">
+        <div v-for="message in messages" :key="message.id">
+          <p v-if="message.nickname !== 'systemctl'" class="text-black leading-5.5">
+            <span :class="`${message.nickname === nickname ? 'text-red-500' : 'text-blue-500'}`">
+              {{ message.nickname }}
+              {{ '[' + new Date(message.created).toLocaleString().slice(12, 17) + ']' }}:</span>
+            <span class="ml-2">{{ message.content }}</span>
+          </p>
+          <p v-else class="text-black/40 text-sm leading-5.5">
+            <span class="ml-2">{{ message.content }}</span>
+          </p>
+        </div>
       </div>
       <div id="message-input-container" class="flex h-9.5 rounded-md">
         <textarea class="w-full h-full p-2 rounded-md border bg-white resize-none text-sm"
