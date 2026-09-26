@@ -8,7 +8,7 @@ import pb from "@/lib/pocketbase"
 const appId = inject<ComputedRef<string | undefined>>("appId")
 const { registerMenus } = useMenuBarStore();
 
-function getFinderMenus(): MenuEntry[] {
+function getChatMenus(): MenuEntry[] {
   return [
     {
       id: "chat",
@@ -16,66 +16,6 @@ function getFinderMenus(): MenuEntry[] {
       labelType: "text",
       isOpen: false,
       options: [{ id: "about-chat", name: "About Chat", disabled: false }],
-    },
-    {
-      id: "file",
-      name: "File",
-      labelType: "text",
-      isOpen: false,
-      options: [
-        {
-          id: "new-finder-window",
-          name: "New Finder Window",
-          disabled: false,
-          openWindow: {
-            title: "Finder",
-            content: "Finder",
-            offsetX: 40,
-            offsetY: 60,
-            initialX: 0,
-            initialY: 0,
-            height: 360,
-            width: 460,
-            isMaximized: false,
-            unifiedBackground: true,
-          },
-        },
-        { id: "open", name: "Open", disabled: true },
-        { id: "save", name: "Save", disabled: true },
-        { id: "save-as", name: "Save As", disabled: true },
-        { id: "close", name: "Close", disabled: true },
-      ],
-    },
-    {
-      id: "edit",
-      name: "Edit",
-      labelType: "text",
-      isOpen: false,
-      options: [{ id: "cut", name: "Cut", disabled: false }],
-    },
-    {
-      id: "view",
-      name: "View",
-      labelType: "text",
-      isOpen: false,
-      options: [
-        { id: "zoom-in", name: "Zoom In", disabled: false },
-        { id: "zoom-out", name: "Zoom Out", disabled: false },
-      ],
-    },
-    {
-      id: "go",
-      name: "Go",
-      labelType: "text",
-      isOpen: false,
-      options: [{ id: "go-to-folder", name: "Go to Folder", disabled: false }],
-    },
-    {
-      id: "help",
-      name: "Help",
-      labelType: "text",
-      isOpen: false,
-      options: [{ id: "help", name: "Help", disabled: false }],
     },
   ];
 }
@@ -103,7 +43,7 @@ const nickname = ref("caio");
 
 onMounted(async () => {
   if (appId?.value) {
-    registerMenus(appId.value, getFinderMenus())
+    registerMenus(appId.value, getChatMenus())
   }
 
   // Chat history retrieval
