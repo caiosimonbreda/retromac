@@ -27,6 +27,7 @@ export interface WindowData {
   initialY: number;
   height: number;
   width: number;
+  programData?: any;
   isMaximized?: boolean;
   disableClose?: boolean;
   disableMaximise?: boolean;
@@ -46,6 +47,7 @@ export interface WindowShallowData {
   initialY?: number;
   height?: number;
   width?: number;
+  programData?: any;
   isMaximized?: boolean;
   unifiedBackground?: boolean;
   disableMinimise?: boolean;

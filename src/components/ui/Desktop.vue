@@ -121,8 +121,8 @@ provide("openWindow", handleOpenWindow);
       <MenuBar @open-window="handleOpenWindow" />
       <div class="flex flex-col h-full w-full p-6 items-end justify-start gap-5">
         <FinderItem name="Macintosh HD" type="disk" @dblclick="handleOpenWindow({ content: 'DocumentReader'})" />
-        <FinderItem name="Mac Chat" type="other" :custom-icon="aimIcon" @dblclick="handleOpenWindow({ content: 'Chat', unifiedBackground: true, title: 'Chat', height: 380,
-            width: 480 })" />
+        <FinderItem name="Mac Chat" type="other" :custom-icon="aimIcon" @dblclick="handleOpenWindow({ content: 'ChatStartup', unifiedBackground: true, title: 'Chat', height: 300,
+            width: 240, startCentered: true, disableResize: true })" />
       </div>
       <Window
         v-for="(window, windowIndex) in windows"
@@ -135,7 +135,7 @@ provide("openWindow", handleOpenWindow);
         @close="closeWindow(windowIndex)"
         @update="(payload) => onWindowUpdate(windowIndex, payload)"
       >
-        <component :is="window.content" />
+        <component :is="window.content" :program-data="window.programData" @close="closeWindow(windowIndex)" />
       </Window>
     </main>
   </div>

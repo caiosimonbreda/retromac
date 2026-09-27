@@ -8,6 +8,13 @@ import pb from "@/lib/pocketbase"
 const appId = inject<ComputedRef<string | undefined>>("appId")
 const { registerMenus } = useMenuBarStore();
 
+const props = defineProps<{
+  programData: {
+    nickname: string;
+    sessionId: string;
+  };
+}>();
+
 function getChatMenus(): MenuEntry[] {
   return [
     {
@@ -19,6 +26,8 @@ function getChatMenus(): MenuEntry[] {
     },
   ];
 }
+
+const nickname = ref(props.programData.nickname);
 
 const openWindow = inject<(data: WindowShallowData) => void>("openWindow")
 
@@ -37,9 +46,6 @@ const scrollToBottom = async () => {
 
 let messageUnsubscribe;
 let presenceUnsubscribe;
-
-const nickname = ref("caio");
-// const nickname = ref(localStorage.getItem("chat-nickname") ?? "");
 
 onMounted(async () => {
   if (appId?.value) {
